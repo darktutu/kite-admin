@@ -89,14 +89,14 @@ class ArticleTag extends React.Component {
                 {value ? (
                   <Icon type="check-circle" />
                 ) : (
-                  <Icon type="close-circle" />
-                )}
+                    <Icon type="close-circle" />
+                  )}
               </div>
             )
           }
         },
         {
-          title: '是否加入首页或者推荐',
+          title: '文章是否加入首页或者推荐',
           dataIndex: 'is_push',
           key: 'is_push',
           render: (value, record) => {
@@ -105,8 +105,8 @@ class ArticleTag extends React.Component {
                 {value ? (
                   <Icon type="check-circle" />
                 ) : (
-                  <Icon type="close-circle" />
-                )}
+                    <Icon type="close-circle" />
+                  )}
               </div>
             )
           }
@@ -154,7 +154,7 @@ class ArticleTag extends React.Component {
     }
   }
 
-  componentDidMount() {
+  componentDidMount () {
     this.fetchArticleTagList()
   }
 
@@ -184,7 +184,7 @@ class ArticleTag extends React.Component {
         })
         /*删除标签*/
       },
-      onCancel() {
+      onCancel () {
         console.log('Cancel')
       }
     })
@@ -308,7 +308,7 @@ class ArticleTag extends React.Component {
     )
   }
 
-  render() {
+  render () {
     const { stateArticleTag } = this.props
     const { loading, is_create } = this.state
     const { getFieldDecorator } = this.props.form
@@ -425,7 +425,7 @@ class ArticleTag extends React.Component {
                   )}
                 </Form.Item>
 
-                <Form.Item {...itemLayout} label="是否加入首页或者推荐">
+                <Form.Item {...itemLayout} label="文章是否加入首页或者推荐">
                   {getFieldDecorator('is_push', { valuePropName: 'checked' })(
                     <Switch />
                   )}

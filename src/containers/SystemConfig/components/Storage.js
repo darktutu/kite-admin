@@ -1,6 +1,16 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import { Icon, Modal, Button, Form, Input, Select } from 'antd'
+import {
+  Icon,
+  Modal,
+  Button,
+  Form,
+  Input,
+  Select,
+  Checkbox,
+  Row,
+  Col
+} from 'antd'
 import { Link } from 'react-router-dom'
 
 import { getSystemConfigInfo, updateSystemConfigInfo } from '../actions'
@@ -17,28 +27,29 @@ const confirm = Modal.confirm
     stateSystemConfig
   }
 })
-class SystemConfig extends React.Component {
+class Oauth extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
       is_edit: false,
       loading: false,
-      type: ''
+      serviceProvider: ''
     }
   }
 
   async componentDidMount () {
-    this.system_config_info()
+    this.systemConfigInfo()
   }
 
-  async system_config_info () {
+  async systemConfigInfo () {
     await this.props.dispatch(
       getSystemConfigInfo({}, result => {
+        const storage = result.storage || {}
         this.setState({
-          type: result.email.type
+          serviceProvider: storage.serviceProvider || []
         })
         this.props.form.setFieldsValue({
-          ...result.email
+          ...storage
         })
       })
     )
@@ -51,13 +62,13 @@ class SystemConfig extends React.Component {
         this.props.dispatch(
           updateSystemConfigInfo(
             {
-              type: 'email',
-              email: {
+              type: 'storage',
+              storage: {
                 ...values
               }
             },
             result => {
-              this.system_config_info()
+              this.systemConfigInfo()
               this.setState({
                 is_edit: false
               })
@@ -69,7 +80,7 @@ class SystemConfig extends React.Component {
   }
 
   render () {
-    const { is_edit } = this.state
+    const { is_edit, serviceProvider } = this.state
     const { getFieldDecorator } = this.props.form
 
     const itemLayout = {
@@ -97,7 +108,7 @@ class SystemConfig extends React.Component {
     return (
       <div className="layout-main" id="system-config">
         <div className="layout-main-title">
-          <h4 className="header-title">邮箱修改or绑定</h4>
+          <h4 className="header-title">外部存储</h4>
         </div>
 
         <div className="layout-nav-btn"></div>
@@ -105,12 +116,12 @@ class SystemConfig extends React.Component {
         <div className="card layout-card-view">
           <div className="card-body sc-content-view">
             <Form className="from-view" onSubmit={this.handleSubmit.bind(this)}>
-              <Form.Item {...itemLayout} label="系统类型">
-                {getFieldDecorator('type', {
+              <Form.Item {...itemLayout} label="第三方存储服务商">
+                {getFieldDecorator('serviceProvider', {
                   rules: [
                     {
                       required: true,
-                      message: '请输入系统类型！',
+                      message: '选择第三方存储服务商！',
                       whitespace: true
                     }
                   ]
@@ -119,96 +130,126 @@ class SystemConfig extends React.Component {
                     disabled={!is_edit}
                     onChange={value => {
                       this.setState({
-                        type: value
+                        serviceProvider: value
                       })
                     }}
                   >
-                    <Option value="company">企业</Option>
-                    <Option value="personal">个人</Option>
+                    <Option value="default">默认存储本地</Option>
+                    <Option value="qiniu">七牛</Option>
+                    <Option value="aliyun">阿里云</Option>
+                    <Option value="tengxun">腾讯</Option>
                   </Select>
                 )}
               </Form.Item>
-              <Form.Item {...itemLayout} label="系统邮箱">
-                {getFieldDecorator('user', {
+
+              <Form.Item {...itemLayout} label="domain">
+                {getFieldDecorator('domain', {
                   rules: [
                     {
-                      required: true,
-                      message: '请输入系统邮箱！',
-                      whitespace: true
+                      message: 'Please input domain!'
                     }
                   ]
-                })(<Input disabled={!is_edit} placeholder="邮箱" />)}
+                })(<Input disabled={!is_edit} />)}
+              </Form.Item>
+
+              <Form.Item {...itemLayout} label="bucket">
+                {getFieldDecorator('bucket', {
+                  rules: [
+                    {
+                      message: 'Please input bucket!'
+                    }
+                  ]
+                })(<Input disabled={!is_edit} />)}
+              </Form.Item>
+
+              <Form.Item {...itemLayout} label="accessKey">
+                {getFieldDecorator('accessKey', {
+                  rules: [
+                    {
+                      message: 'Please input accessKey!'
+                    }
+                  ]
+                })(<Input disabled={!is_edit} />)}
+              </Form.Item>
+
+              <Form.Item {...itemLayout} label="secretKey">
+                {getFieldDecorator('secretKey', {
+                  rules: [
+                    {
+                      message: 'Please input secretKey!'
+                    }
+                  ]
+                })(<Input disabled={!is_edit} />)}
               </Form.Item>
 
               <div
+                className="qiniu"
                 style={{
-                  display: this.state.type === 'company' ? 'block' : 'none'
+                  display: serviceProvider === 'qiniu' ? 'block' : 'none'
                 }}
               >
-                <Form.Item {...itemLayout} label="服务商服务器地址">
-                  {getFieldDecorator('host', {
+
+                <Form.Item {...itemLayout} label="机房">
+                  {getFieldDecorator('zone', {
                     rules: [
                       {
-                        required: true,
-                        message: '请输入服务商服务器地址！',
+                        message: '选择zone！',
                         whitespace: true
                       }
                     ]
-                  })(<Input disabled={!is_edit} placeholder="服务器地址" />)}
+                  })(
+                    <Select
+                      disabled={!is_edit}
+                    >
+                      <Option value="Zone_z0">华东</Option>
+                      <Option value="Zone_z1">华北</Option>
+                      <Option value="Zone_z2">华南</Option>
+                      <Option value="Zone_na0">北美</Option>
+                    </Select>
+                  )}
                 </Form.Item>
-                <Form.Item {...itemLayout} label="系统邮箱服务商端口">
-                  {getFieldDecorator('port', {
-                    rules: [
-                      {
-                        required: true,
-                        message: '请输入系统邮箱服务商端口！',
-                        whitespace: true
-                      }
-                    ]
-                  })(<Input disabled={!is_edit} placeholder="服务商端口" />)}
-                </Form.Item>
+
               </div>
 
-              <Form.Item
-                {...itemLayout}
-                label="系统邮箱服务商后缀"
+              <div
+                className="aliyun"
                 style={{
-                  display: this.state.type === 'company' ? 'none' : 'block'
+                  display: serviceProvider === 'aliyun' || serviceProvider === 'tengxun' ? 'block' : 'none'
                 }}
               >
-                {getFieldDecorator('service', {
-                  rules: [
-                    {
-                      required: true,
-                      message: '请输入邮箱服务商后缀！',
-                      whitespace: true
-                    }
-                  ]
-                })(
-                  <Input
-                    disabled={!is_edit}
-                    placeholder="（例如：qq、163等等）"
-                  />
-                )}
-              </Form.Item>
 
-              <Form.Item {...itemLayout} label="系统邮箱密码">
-                {getFieldDecorator('pass', {
-                  rules: [
-                    {
-                      required: true,
-                      message: '请输入邮箱密码！',
-                      whitespace: true
-                    }
-                  ]
-                })(
-                  <Input
-                    disabled={!is_edit}
-                    type="password"
-                    placeholder="邮箱密码"
-                  />
-                )}
-              </Form.Item>
+                <Form.Item {...itemLayout} label="region(bucket所在的区域)">
+                  {getFieldDecorator('region', {
+                    rules: [
+                      {
+                        message: 'Please input region!'
+                      }
+                    ]
+                  })(<Input disabled={!is_edit} />)}
+                </Form.Item>
+
+              </div>
+
+              <div
+                className="aliyun"
+                style={{
+                  display: serviceProvider === 'aliyun' ? 'block' : 'none'
+                }}
+              >
+
+                <Form.Item {...itemLayout} label="endPoint">
+                  {getFieldDecorator('endPoint', {
+                    rules: [
+                      {
+                        message: 'Please input endPoint!'
+                      }
+                    ]
+                  })(<Input disabled={!is_edit} />)}
+                </Form.Item>
+
+              </div>
+
+
 
               <Form.Item {...tailItemLayout}>
                 {!is_edit ? (
@@ -237,7 +278,7 @@ class SystemConfig extends React.Component {
                       <button
                         className="btn btn-light"
                         onClick={() => {
-                          this.system_config_info()
+                          this.systemConfigInfo()
                           this.setState({
                             is_edit: false
                           })
@@ -257,6 +298,6 @@ class SystemConfig extends React.Component {
   }
 }
 
-const SystemConfigForm = Form.create()(SystemConfig)
+const OauthForm = Form.create()(Oauth)
 
-export default SystemConfigForm
+export default OauthForm
